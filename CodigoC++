@@ -1,0 +1,128 @@
+#define NCASILLAS 100
+#define VACIO NULL
+static char * BORRADO='''';
+
+typedef char **TablaHash;
+
+TablaHash CrearTablaHash () 
+
+{
+   TablaHash t;
+   register i;
+
+   t=(TablaHash)malloc(NCASILLAS*sizeof(char *));
+   if (t==NULL) 
+      error("Memoria Insuficiente.");
+
+   for (i=0;i<NCASILLAS;i++)
+      t[i]=VACIO;
+
+   return t;
+}
+
+void DestruirTablaHash (TablaHash t) 
+
+{
+   register i;
+
+   for (i=O;i<NCASILLAS;i++)
+      if (t[i]!=VACIO && t[i]!=BORRADO)
+         free(t[i]);
+
+   free t;
+}
+
+int Hash (char *cad) 
+
+{
+   int valor;
+   unsigned char *c;	
+  
+   for (c=cad, valor=0; *c; c++)
+   	  valor += (int)*c;
+
+   return (valor%NCASILLAS);
+}
+
+int Localizar (char *x,TablaHash t) 
+
+/* Devuelve el sitio donde esta x  o donde deberia de estar. */ 
+/* No tiene en cuenta los borrados.                          */
+
+{
+   int ini,i,aux;
+
+   ini=Hash(x);
+
+   for (i=O;i<NCASILLAS;i++) {
+      aux=(ini+i)%NCASILLAS;
+      if (t[aux]==VACIO)
+         return aux;
+      if (!strcmp(t[aux],x))
+         return aux;
+   }
+   return ini;
+}
+
+int Localizar1 (char *x,TablaHash t) 
+
+/* Devuelve el sitio donde podriamos poner x  */
+
+{
+   int ini,i,aux;
+
+   ini=Hash(x);
+
+   for (i=O;i<NCASILLAS;i++) {
+      aux=(ini+i)%NCASILLAS;
+      if (t[aux]==VACIO || t[aux]==BORRADO)
+         return aux;
+      if (!strcmp(t[aux],x))
+         return aux;
+   }
+
+   return ini;
+}
+
+int MiembroHash (char *cad,TablaHash t) 
+
+{
+   int pos=Localizar(cad,t);
+
+   if (t[pos]==VACIO)
+      return 0;
+   else
+      return(!strcomp(t[pos],cad));
+}
+
+void InsertarHash (char *cad,TablaHash t) 
+
+{
+   int pos;
+
+   if (!cad) 
+      error("Cadena inexistente.");
+
+   if (!MiembroHash(cad,t)) {
+       pos=Localizar1(cad,t);
+       if (t[pos]==VACIO || t[pos]==BORRADO) {
+          t[pos]=(char *)malloc((strlen(cad)+1)*sizeof(char));
+          strcpy(t[pos],cad);
+       } else {
+          error("Tabla Llena. \n");
+       }
+   }
+}
+
+void BorrarHash (char *cad,TablaHash t) 
+
+{
+   int pos = Localizar(cad,t);
+
+   if (t[pos]!=VACIO && t[pos]!=BORRADO) {
+      if (!strcmp(t[pos],cad)) {
+         free(t[pos]);
+         t[pos]=BORRADO;
+      }
+   }
+}
